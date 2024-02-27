@@ -79,3 +79,22 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 
 	return ctx.JSON(http.StatusOK, resp)
 }
+
+func (s *Server) GetProfile(ctx echo.Context) (err error) {
+	var ctx_ = ctx.Request().Context()
+	var resp generated.GetProfileResponse
+	var user repository.User
+
+	// TODO: parse user info from token
+	phone := "+628111111111"
+
+	if user, err = s.Repository.GetUserByPhone(ctx_, phone); err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	resp.FullName = user.Name
+	resp.Phone = user.Phone
+
+	return ctx.JSON(http.StatusOK, resp)
+}

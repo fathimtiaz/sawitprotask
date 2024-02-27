@@ -28,7 +28,7 @@ func (s *Server) Registration(ctx echo.Context) (err error) {
 
 	if err = ctx.Bind(&req); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusBadRequest, nil)
+		return ctx.JSON(http.StatusBadRequest, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	if errs := registrationReqValidation(req); len(errs) > 0 {
@@ -39,12 +39,12 @@ func (s *Server) Registration(ctx echo.Context) (err error) {
 
 	if err = user.HashPassword(); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	if err = s.Repository.SaveUser(ctx_, &user); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	resp.Id = user.Id
@@ -66,19 +66,19 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 
 	if user, err = s.Repository.GetUserByPhone(ctx_, req.Phone); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	resp.Id = user.Id
 
 	if err = user.ComparePassword(req.Password); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	if resp.Token, err = user.GenerateToken(); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	return ctx.JSON(http.StatusOK, resp)
@@ -93,14 +93,14 @@ func (s *Server) GetProfile(ctx echo.Context) (err error) {
 	_, ok := ctx.Get(domain.UserIdCtxKey).(float64)
 	if !ok {
 		ctx.Logger().Error(errors.New("invalid user_id ctx"))
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	userId = int64(ctx.Get(domain.UserIdCtxKey).(float64))
 
 	if user, err = s.Repository.GetUserById(ctx_, userId); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	resp.FullName = user.Name
@@ -129,14 +129,14 @@ func (s *Server) UpdateProfile(ctx echo.Context) (err error) {
 	_, ok := ctx.Get(domain.UserIdCtxKey).(float64)
 	if !ok {
 		ctx.Logger().Error(errors.New("invalid user_id ctx"))
-		return ctx.JSON(http.StatusInternalServerError, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	userId = int64(ctx.Get(domain.UserIdCtxKey).(float64))
 
 	if err = ctx.Bind(&req); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusBadRequest, nil)
+		return ctx.JSON(http.StatusBadRequest, errorResponseFromMsg(badRequestMsg))
 	}
 
 	if errs := updateProfileReqValidation(req); len(errs) > 0 {
@@ -147,12 +147,12 @@ func (s *Server) UpdateProfile(ctx echo.Context) (err error) {
 
 	if err = s.Repository.UpdateUser(ctx_, updateUserInput); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusForbidden, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	if user, err = s.Repository.GetUserById(ctx_, userId); err != nil {
 		ctx.Logger().Error(err)
-		return ctx.JSON(http.StatusForbidden, nil)
+		return ctx.JSON(http.StatusInternalServerError, errorResponseFromMsg(internalServerErrorMsg))
 	}
 
 	resp.FullName = user.Name

@@ -45,19 +45,19 @@ func (r *Repository) GetUserById(ctx context.Context, id int64) (user domain.Use
 
 func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (err error) {
 	var setQ string = "SET "
-	var whereQ string = "WHERE phone = $"
+	var whereQ string = "WHERE id = $"
 	var argCount = 0
 	var args []interface{}
 
 	if input.Phone != "" {
 		argCount++
-		setQ += fmt.Sprintf("phone = $%d", argCount)
+		setQ += fmt.Sprintf("phone = $%d, ", argCount)
 		args = append(args, input.Phone)
 	}
 
 	if input.FullName != "" {
 		argCount++
-		setQ += fmt.Sprintf("full_name = $%d", argCount)
+		setQ += fmt.Sprintf("full_name = $%d ", argCount)
 		args = append(args, input.FullName)
 	}
 
@@ -67,5 +67,8 @@ func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (err
 	whereQ += fmt.Sprintf("%d", argCount)
 	args = append(args, input.WhereId)
 
-	return r.Db.QueryRowContext(ctx, `UPDATE user_`+setQ+whereQ, args...).Scan()
+	fmt.Println(`UPDATE user_ ` + setQ + whereQ)
+	fmt.Println(args)
+
+	return r.Db.QueryRowContext(ctx, `UPDATE user_ `+setQ+whereQ, args...).Err()
 }

@@ -10,7 +10,7 @@
 CREATE TABLE user_ (
   id serial PRIMARY KEY,
   full_name VARCHAR(60) NOT NULL,
-  phone VARCHAR(13) UNIQUE NOT NULL,
+  phone VARCHAR(16) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL
 );
 

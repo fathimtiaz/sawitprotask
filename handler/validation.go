@@ -18,45 +18,72 @@ var errPwdNoCap = errors.New("password must have at least 1 capital letter")
 var errPwdNoNum = errors.New("password must have at least 1 number")
 var errPwdNoSpcChar = errors.New("password must have at least 1 special character")
 
-func registrationReqValidation(req generated.RegistrationRequest) (errs []error) {
-	if len(req.Phone) < 10 {
+func phoneValidation(phone string) (errs []error) {
+	// 13 = (+62) + 10
+	if len(phone) < 13 {
 		errs = append(errs, errPhoneTooShort)
-	}
-
-	if len(req.Phone) > 13 {
-		errs = append(errs, errPhoneTooLong)
-	}
-
-	if req.Phone[:3] != "+62" {
+	} else if len(phone) > 3 && phone[:3] != "+62" {
 		errs = append(errs, errPhoneArea)
 	}
 
-	if len(req.FullName) < 3 {
+	// 16 = (+62) + 13
+	if len(phone) > 16 {
+		errs = append(errs, errPhoneTooLong)
+	}
+
+	return
+}
+
+func nameValidation(name string) (errs []error) {
+	if len(name) < 3 {
 		errs = append(errs, errNameTooShort)
 	}
 
-	if len(req.FullName) > 60 {
+	if len(name) > 60 {
 		errs = append(errs, errNameTooLong)
 	}
 
-	if len(req.Password) < 6 {
+	return
+}
+
+func passwordValidation(password string) (errs []error) {
+	if len(password) < 6 {
 		errs = append(errs, errPwdTooShort)
 	}
 
-	if len(req.Password) > 64 {
+	if len(password) > 64 {
 		errs = append(errs, errPwdTooLong)
 	}
 
-	if !helper.StringHasCapital(req.Password) {
+	if !helper.StringHasCapital(password) {
 		errs = append(errs, errPwdNoCap)
 	}
 
-	if !helper.StringHasNumber(req.Password) {
+	if !helper.StringHasNumber(password) {
 		errs = append(errs, errPwdNoNum)
 	}
 
-	if !helper.StringHasSpecialChar(req.Password) {
+	if !helper.StringHasSpecialChar(password) {
 		errs = append(errs, errPwdNoSpcChar)
+	}
+
+	return
+}
+
+func registrationReqValidation(req generated.RegistrationRequest) (errs []error) {
+	errs = append(errs, phoneValidation(req.Phone)...)
+	errs = append(errs, nameValidation(req.FullName)...)
+	errs = append(errs, passwordValidation(req.Password)...)
+	return
+}
+
+func updateProfileReqValidation(req generated.UpdateProfileRequest) (errs []error) {
+	if req.Phone != nil {
+		errs = append(errs, phoneValidation(*req.Phone)...)
+	}
+
+	if req.FullName != nil {
+		errs = append(errs, nameValidation(*req.FullName)...)
 	}
 
 	return

@@ -139,6 +139,10 @@ func (s *Server) UpdateProfile(ctx echo.Context) (err error) {
 		return ctx.JSON(http.StatusBadRequest, nil)
 	}
 
+	if errs := updateProfileReqValidation(req); len(errs) > 0 {
+		return ctx.JSON(http.StatusBadRequest, errorResponseFromErrs(errs))
+	}
+
 	updateUserInput = updateProfileRequestToInput(userId, req)
 
 	if err = s.Repository.UpdateUser(ctx_, updateUserInput); err != nil {

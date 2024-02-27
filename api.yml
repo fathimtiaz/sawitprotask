@@ -162,12 +162,14 @@ components:
           type: string
         phone:
           type: string
+    ErrorMessage:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
     ErrorResponse:
       type: array
-      messages:
-        type: object
-        required:
-          - message
-        properties:
-          message:
-            type: string
+      items:
+        $ref: "#/components/schemas/ErrorMessage"

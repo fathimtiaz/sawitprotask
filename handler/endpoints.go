@@ -20,7 +20,6 @@ func registrationReqToUser(req generated.RegistrationRequest) (user domain.User)
 // This is just a test endpoint to get you started. Please delete this endpoint.
 // (GET /hello)
 func (s *Server) Registration(ctx echo.Context) (err error) {
-
 	var ctx_ = ctx.Request().Context()
 	var req generated.RegistrationRequest
 	var resp generated.RegistrationResponse
@@ -29,6 +28,10 @@ func (s *Server) Registration(ctx echo.Context) (err error) {
 	if err = ctx.Bind(&req); err != nil {
 		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusBadRequest, nil)
+	}
+
+	if errs := registrationReqValidation(req); len(errs) > 0 {
+		return ctx.JSON(http.StatusBadRequest, errorResponseFromErrs(errs))
 	}
 
 	user = registrationReqToUser(req)

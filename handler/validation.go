@@ -19,15 +19,13 @@ var errPwdNoNum = errors.New("password must have at least 1 number")
 var errPwdNoSpcChar = errors.New("password must have at least 1 special character")
 
 func phoneValidation(phone string) (errs []error) {
-	// 13 = (+62) + 10
-	if len(phone) < 13 {
+	if len(phone) < 10 {
 		errs = append(errs, errPhoneTooShort)
 	} else if len(phone) > 3 && phone[:3] != "+62" {
 		errs = append(errs, errPhoneArea)
 	}
 
-	// 16 = (+62) + 13
-	if len(phone) > 16 {
+	if len(phone) > 13 {
 		errs = append(errs, errPhoneTooLong)
 	}
 

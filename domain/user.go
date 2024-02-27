@@ -2,8 +2,9 @@ package domain
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/SawitProRecruitment/UserService/helper/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -16,7 +17,7 @@ type User struct {
 	Password string
 }
 
-const userCtxKey = "user_data"
+const UserIdCtxKey = "user_id"
 
 func newPublicUser(user User) User {
 	return User{
@@ -40,24 +41,18 @@ func (u *User) ComparePassword(passAttempt string) error {
 }
 
 func (u *User) GenerateToken() (token string, err error) {
-	userData, err := json.Marshal(newPublicUser(*u))
-	if err != nil {
-		return
-	}
-
-	return jwt.GenerateUserToken(userData)
+	return jwt.GenerateUserToken(u.Id, u.Phone, u.Name)
 }
 
-func NewAuthenticatedUser(ctx context.Context) (result User, err error) {
-	authdValue, ok := ctx.Value(userCtxKey).([]byte)
+func UserIdCtx(ctx context.Context) (id int64, err error) {
+	fmt.Println(reflect.TypeOf(ctx.Value(UserIdCtxKey)))
+	ids, ok := ctx.Value(UserIdCtxKey).(float64)
 	if !ok {
 		err = errors.New("invalid user ctx")
 		return
 	}
 
-	if err = json.Unmarshal(authdValue, &result); err != nil {
-		return
-	}
+	id = int64(ids)
 
 	return
 }

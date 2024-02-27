@@ -13,4 +13,5 @@ import (
 type RepositoryInterface interface {
 	SaveUser(ctx context.Context, user *domain.User) error
 	GetUserByPhone(ctx context.Context, phone string) (user domain.User, err error)
+	GetUserById(ctx context.Context, id int64) (user domain.User, err error)
 }

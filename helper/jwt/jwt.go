@@ -1,20 +1,53 @@
 package jwt
 
 import (
+	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-func GenerateUserToken(encodedUser []byte) (string, error) {
-	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(""))
+func GenerateUserToken(userId int64, userPhone, userName string) (string, error) {
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(os.Getenv("PRIV_KEY")))
 	if err != nil {
 		return "", err
 	}
 
 	claims := make(jwt.MapClaims)
-	claims["user"] = encodedUser
-	claims["exp"] = time.Now()
+	claims["user_id"] = userId
+	claims["user_phone"] = userPhone
+	claims["user_name"] = userName
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(key)
+	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(privateKey)
+}
+
+func ParseToken(token string) (claims jwt.MapClaims, err error) {
+	var parsed *jwt.Token
+	var ok bool
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(os.Getenv("PUBLIC_KEY")))
+	if err != nil {
+		return nil, err
+	}
+
+	parsed, err = jwt.Parse(token, func(jwtToken *jwt.Token) (interface{}, error) {
+		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
+		}
+
+		return publicKey, nil
+	})
+
+	if !parsed.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	if claims, ok = parsed.Claims.(jwt.MapClaims); !ok {
+		return nil, errors.New("invalid token")
+	}
+
+	return
 }

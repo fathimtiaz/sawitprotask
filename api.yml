@@ -19,7 +19,7 @@ servers:
 paths:
   /registration:
     post:
-      summary: This is just a test endpoint to get you started. Please delete this endpoint.
+      summary: Register user.
       operationId: registration
       requestBody:
         description: Body
@@ -35,6 +35,12 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/RegistrationResponse"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Not found
           content:
@@ -43,7 +49,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
   /login:
     post:
-      summary: This is just a test endpoint to get you started. Please delete this endpoint.
+      summary: Getting user access token.
       operationId: login
       requestBody:
         description: Body
@@ -54,11 +60,17 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Test return
+          description: Success response returning user id and access token.
           content:
             application/json:    
               schema:
                 $ref: "#/components/schemas/LoginResponse"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Not found
           content:
@@ -67,17 +79,23 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
   /profile:
     get:
-      summary: This is just a test endpoint to get you started. Please delete this endpoint.
+      summary: Getting user name and phone.
       operationId: getProfile
       security:
-        - bearerAuth: []
+        - bearerAuth: [profile:r]
       responses:
         '200':
-          description: Test return
+          description: Success response returning user name and phone.
           content:
             application/json:    
               schema:
                 $ref: "#/components/schemas/GetProfileResponse"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Not found
           content:
@@ -86,6 +104,11 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
                 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
   schemas:
     RegistrationRequest:
       type: object

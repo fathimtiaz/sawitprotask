@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/SawitProRecruitment/UserService/domain"
@@ -27,19 +27,19 @@ func (s *Server) Registration(ctx echo.Context) (err error) {
 	var user domain.User
 
 	if err = ctx.Bind(&req); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusBadRequest, nil)
 	}
 
 	user = registrationReqToUser(req)
 
 	if err = user.HashPassword(); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
 	if err = s.Repository.SaveUser(ctx_, &user); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
@@ -56,24 +56,24 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 	var user domain.User
 
 	if err = ctx.Bind(&req); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusBadRequest, nil)
 	}
 
 	if user, err = s.Repository.GetUserByPhone(ctx_, req.Phone); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
 	resp.Id = user.Id
 
 	if err = user.ComparePassword(req.Password); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
 	if resp.Token, err = user.GenerateToken(); err != nil {
-		fmt.Println(err)
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
@@ -83,15 +83,19 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 func (s *Server) GetProfile(ctx echo.Context) (err error) {
 	var ctx_ = ctx.Request().Context()
 	var resp generated.GetProfileResponse
+	var userId int64
 	var user domain.User
 
-	if user, err = domain.NewAuthenticatedUser(ctx.Request().Context()); err != nil {
-		fmt.Println(err)
+	_, ok := ctx.Get(domain.UserIdCtxKey).(float64)
+	if !ok {
+		ctx.Logger().Error(errors.New("invalid user_id ctx"))
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 
-	if user, err = s.Repository.GetUserByPhone(ctx_, user.Phone); err != nil {
-		fmt.Println(err)
+	userId = int64(ctx.Get(domain.UserIdCtxKey).(float64))
+
+	if user, err = s.Repository.GetUserById(ctx_, userId); err != nil {
+		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}
 

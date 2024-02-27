@@ -29,3 +29,15 @@ func (r *Repository) GetUserByPhone(ctx context.Context, phone string) (user dom
 
 	return
 }
+
+func (r *Repository) GetUserById(ctx context.Context, id int64) (user domain.User, err error) {
+	err = r.Db.QueryRowContext(ctx, `
+		SELECT id, full_name, phone, password FROM user_
+		WHERE id = $1
+		`, id).Scan(&user.Id, &user.Name, &user.Phone, &user.Password)
+	if err != nil {
+		return
+	}
+
+	return
+}

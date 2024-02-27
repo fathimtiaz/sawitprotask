@@ -102,7 +102,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-                
+    patch:
+      summary: Update user name and/or phone.
+      operationId: updateProfile
+      security:
+        - bearerAuth: [profile:w]
+      requestBody:
+        description: Body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Success response returning user name and phone.
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/UpdateProfileResponse"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -153,6 +184,23 @@ components:
         token:
           type: string
     GetProfileResponse:
+      type: object
+      required:
+        - full_name
+        - phone
+      properties:
+        full_name:
+          type: string
+        phone:
+          type: string
+    UpdateProfileRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        full_name:
+          type: string
+    UpdateProfileResponse:
       type: object
       required:
         - full_name

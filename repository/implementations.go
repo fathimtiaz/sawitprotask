@@ -43,7 +43,7 @@ func (r *Repository) GetUserById(ctx context.Context, id int64) (user domain.Use
 	return
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (user domain.User, err error) {
+func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (err error) {
 	var setQ string = "SET "
 	var whereQ string = "WHERE phone = $"
 	var argCount = 0
@@ -67,12 +67,5 @@ func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (use
 	whereQ += fmt.Sprintf("%d", argCount)
 	args = append(args, input.WhereId)
 
-	err = r.Db.QueryRowContext(ctx, `
-		UPDATE user_
-		`+setQ+whereQ, args...).Scan()
-	if err != nil {
-		return
-	}
-
-	return
+	return r.Db.QueryRowContext(ctx, `UPDATE user_`+setQ+whereQ, args...).Scan()
 }

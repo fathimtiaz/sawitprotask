@@ -2,7 +2,7 @@
 package repository
 
 type UpdateUserInput struct {
-	WhereId  string
+	WhereId  int64
 	Phone    string
 	FullName string
 }

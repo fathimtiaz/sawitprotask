@@ -14,5 +14,5 @@ type RepositoryInterface interface {
 	SaveUser(ctx context.Context, user *domain.User) error
 	GetUserByPhone(ctx context.Context, phone string) (user domain.User, err error)
 	GetUserById(ctx context.Context, id int64) (user domain.User, err error)
-	UpdateUser(ctx context.Context, input UpdateUserInput) (user domain.User, err error)
+	UpdateUser(ctx context.Context, input UpdateUserInput) (err error)
 }

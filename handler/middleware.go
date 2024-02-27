@@ -16,7 +16,7 @@ func Authenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		swag, err := generated.GetSwagger()
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, nil)
+			c.JSON(http.StatusForbidden, nil)
 			return err
 		}
 
@@ -30,18 +30,22 @@ func Authenticate(next echo.HandlerFunc) echo.HandlerFunc {
 			if swag.Paths.Find(c.Path()).Post.Security != nil {
 				checkAuth = true
 			}
+		case "PATCH":
+			if swag.Paths.Find(c.Path()).Patch.Security != nil {
+				checkAuth = true
+			}
 		}
 
 		if checkAuth {
 			authHdr := c.Request().Header.Get("Authorization")
 			if authHdr == "" {
-				c.JSON(http.StatusUnauthorized, nil)
+				c.JSON(http.StatusForbidden, nil)
 				return errors.New("auth header doesn't exist")
 			}
 
 			prefix := "Bearer "
 			if !strings.HasPrefix(authHdr, prefix) {
-				c.JSON(http.StatusUnauthorized, nil)
+				c.JSON(http.StatusForbidden, nil)
 				return errors.New("unauthorized")
 			}
 
@@ -49,7 +53,7 @@ func Authenticate(next echo.HandlerFunc) echo.HandlerFunc {
 
 			claims, err := jwt.ParseToken(token)
 			if err != nil {
-				c.JSON(http.StatusUnauthorized, nil)
+				c.JSON(http.StatusForbidden, nil)
 				return err
 			}
 

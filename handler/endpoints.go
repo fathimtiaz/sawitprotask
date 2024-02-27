@@ -6,6 +6,7 @@ import (
 
 	"github.com/SawitProRecruitment/UserService/domain"
 	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/labstack/echo/v4"
 )
 
@@ -100,6 +101,54 @@ func (s *Server) GetProfile(ctx echo.Context) (err error) {
 	if user, err = s.Repository.GetUserById(ctx_, userId); err != nil {
 		ctx.Logger().Error(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	resp.FullName = user.Name
+	resp.Phone = user.Phone
+
+	return ctx.JSON(http.StatusOK, resp)
+}
+
+func updateProfileRequestToInput(userId int64, req generated.UpdateProfileRequest) repository.UpdateUserInput {
+	return repository.UpdateUserInput{
+		WhereId:  userId,
+		Phone:    *req.Phone,
+		FullName: *req.FullName,
+	}
+}
+
+func (s *Server) UpdateProfile(ctx echo.Context) (err error) {
+
+	var ctx_ = ctx.Request().Context()
+	var req generated.UpdateProfileRequest
+	var resp generated.UpdateProfileResponse
+	var userId int64
+	var updateUserInput repository.UpdateUserInput
+	var user domain.User
+
+	_, ok := ctx.Get(domain.UserIdCtxKey).(float64)
+	if !ok {
+		ctx.Logger().Error(errors.New("invalid user_id ctx"))
+		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
+
+	userId = int64(ctx.Get(domain.UserIdCtxKey).(float64))
+
+	if err = ctx.Bind(&req); err != nil {
+		ctx.Logger().Error(err)
+		return ctx.JSON(http.StatusBadRequest, nil)
+	}
+
+	updateUserInput = updateProfileRequestToInput(userId, req)
+
+	if err = s.Repository.UpdateUser(ctx_, updateUserInput); err != nil {
+		ctx.Logger().Error(err)
+		return ctx.JSON(http.StatusForbidden, nil)
+	}
+
+	if user, err = s.Repository.GetUserById(ctx_, userId); err != nil {
+		ctx.Logger().Error(err)
+		return ctx.JSON(http.StatusForbidden, nil)
 	}
 
 	resp.FullName = user.Name

@@ -4,9 +4,13 @@
 // interfaces using mockgen. See the Makefile for more information.
 package repository
 
-import "context"
+import (
+	"context"
+
+	"github.com/SawitProRecruitment/UserService/domain"
+)
 
 type RepositoryInterface interface {
-	SaveUser(ctx context.Context, user *User) error
-	GetUserByPhone(ctx context.Context, phone string) (user User, err error)
+	SaveUser(ctx context.Context, user *domain.User) error
+	GetUserByPhone(ctx context.Context, phone string) (user domain.User, err error)
 }

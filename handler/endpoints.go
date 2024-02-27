@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/SawitProRecruitment/UserService/domain"
 	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/labstack/echo/v4"
 )
 
-func registrationReqToUser(req generated.RegistrationRequest) (user repository.User) {
+func registrationReqToUser(req generated.RegistrationRequest) (user domain.User) {
 	user.Name = req.FullName
 	user.Phone = req.Phone
 	user.Password = req.Password
@@ -24,7 +24,7 @@ func (s *Server) Registration(ctx echo.Context) (err error) {
 	var ctx_ = ctx.Request().Context()
 	var req generated.RegistrationRequest
 	var resp generated.RegistrationResponse
-	var user repository.User
+	var user domain.User
 
 	if err = ctx.Bind(&req); err != nil {
 		fmt.Println(err)
@@ -53,7 +53,7 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 	var ctx_ = ctx.Request().Context()
 	var req generated.LoginRequest
 	var resp generated.LoginResponse
-	var user repository.User
+	var user domain.User
 
 	if err = ctx.Bind(&req); err != nil {
 		fmt.Println(err)
@@ -83,12 +83,14 @@ func (s *Server) Login(ctx echo.Context) (err error) {
 func (s *Server) GetProfile(ctx echo.Context) (err error) {
 	var ctx_ = ctx.Request().Context()
 	var resp generated.GetProfileResponse
-	var user repository.User
+	var user domain.User
 
-	// TODO: parse user info from token
-	phone := "+628111111111"
+	if user, err = domain.NewAuthenticatedUser(ctx.Request().Context()); err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusInternalServerError, nil)
+	}
 
-	if user, err = s.Repository.GetUserByPhone(ctx_, phone); err != nil {
+	if user, err = s.Repository.GetUserByPhone(ctx_, user.Phone); err != nil {
 		fmt.Println(err)
 		return ctx.JSON(http.StatusInternalServerError, nil)
 	}

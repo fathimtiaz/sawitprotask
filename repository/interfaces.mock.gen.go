@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/SawitProRecruitment/UserService/domain"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,10 +36,10 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 }
 
 // GetUserByPhone mocks base method.
-func (m *MockRepositoryInterface) GetUserByPhone(ctx context.Context, phone string) (User, error) {
+func (m *MockRepositoryInterface) GetUserByPhone(ctx context.Context, phone string) (domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByPhone", ctx, phone)
-	ret0, _ := ret[0].(User)
+	ret0, _ := ret[0].(domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,7 +51,7 @@ func (mr *MockRepositoryInterfaceMockRecorder) GetUserByPhone(ctx, phone interfa
 }
 
 // SaveUser mocks base method.
-func (m *MockRepositoryInterface) SaveUser(ctx context.Context, user *User) error {
+func (m *MockRepositoryInterface) SaveUser(ctx context.Context, user *domain.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUser", ctx, user)
 	ret0, _ := ret[0].(error)

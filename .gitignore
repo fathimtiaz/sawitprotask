@@ -28,3 +28,6 @@ build
 
 # Generated
 generated
+
+# RSA keys
+keys/

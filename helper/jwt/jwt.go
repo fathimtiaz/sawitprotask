@@ -3,6 +3,8 @@ package jwt
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"time"
 
@@ -10,7 +12,13 @@ import (
 )
 
 func GenerateUserToken(userId int64, userPhone, userName string) (string, error) {
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(os.Getenv("PRIV_KEY")))
+	// TODO store in config
+	privateKeyBytes, err := ioutil.ReadFile(os.Getenv("PRIV_KEY"))
+	if err != nil {
+		log.Fatal("Error reading private key:", err)
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyBytes))
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +36,13 @@ func ParseToken(token string) (claims jwt.MapClaims, err error) {
 	var parsed *jwt.Token
 	var ok bool
 
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(os.Getenv("PUBLIC_KEY")))
+	// TODO store in config
+	publicKeyBytes, err := ioutil.ReadFile(os.Getenv("PUBLIC_KEY"))
+	if err != nil {
+		log.Fatal("Error reading public key:", err)
+	}
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicKeyBytes))
 	if err != nil {
 		return nil, err
 	}
